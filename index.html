@@ -41,6 +41,9 @@
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <!-- jsPDF (PDF Creation, Searchable OCR PDF, Protection) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas & html2pdf.js for true visual rendering of HTML/CSS into PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- JSZip (Batch ZIP Downloads for Split PDF, PDF to Images, Extract Images) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- QR Code Styling (Custom Styled QR Generator) -->
@@ -49,6 +52,8 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- MediaPipe Selfie Segmentation for AI Person/Object Background Removal -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+    <!-- Lucide Icons (1,400+ Crisp Vector Icons for Offline & Instant Keyword Search) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         body {
@@ -120,7 +125,7 @@
 
                 <button onclick="showDashboard()" class="hidden md:flex items-center gap-1.5 text-sm font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 px-3 py-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-slate-800 transition-colors">
                     <i class="fa-solid fa-table-cells"></i>
-                    <span>All tools (<span id="total-tools-badge">28</span>)</span>
+                    <span>All tools (<span id="total-tools-badge">29</span>)</span>
                 </button>
             </div>
 
@@ -164,7 +169,7 @@
                     <input 
                         type="text" 
                         id="tool-search" 
-                        placeholder="Search 28 tools (e.g., Merge PDF, Background Remover, OCR, Passport, QR)..." 
+                        placeholder="Search 29 tools (e.g., Icon Maker, Background Remover, Merge PDF, OCR, QR)..." 
                         class="w-full pl-11 pr-10 py-3 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm transition-all"
                     >
                     <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 mt-1 text-slate-400 hover:text-slate-600">
@@ -176,10 +181,10 @@
             <!-- Category Tabs (Single Link Categorized View) -->
             <div class="flex flex-wrap items-center justify-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-4" id="category-tabs">
                 <button onclick="setCategory('all')" data-cat="all" class="cat-tab px-4 py-2 rounded-full text-sm font-semibold bg-sky-600 text-white shadow-sm transition-all">
-                    <i class="fa-solid fa-grip mr-1.5"></i>All Tools (28)
+                    <i class="fa-solid fa-grip mr-1.5"></i>All Tools (29)
                 </button>
                 <button onclick="setCategory('featured')" data-cat="featured" class="cat-tab px-4 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-400 transition-all">
-                    <i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i>Featured Custom Studio (5)
+                    <i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i>Featured Custom Studio (6)
                 </button>
                 <button onclick="setCategory('pdf-org')" data-cat="pdf-org" class="cat-tab px-4 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-400 transition-all">
                     <i class="fa-solid fa-file-pdf text-rose-500 mr-1.5"></i>Organize & Merge PDF
@@ -191,7 +196,7 @@
                     <i class="fa-solid fa-arrows-rotate text-emerald-500 mr-1.5"></i>Convert & Compress
                 </button>
                 <button onclick="setCategory('ocr-img')" data-cat="ocr-img" class="cat-tab px-4 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-400 transition-all">
-                    <i class="fa-solid fa-eye text-purple-500 mr-1.5"></i>OCR, Image & QR Tools
+                    <i class="fa-solid fa-eye text-purple-500 mr-1.5"></i>OCR, Icons, Image & QR
                 </button>
             </div>
 
@@ -298,21 +303,21 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 1500);
-        }
+        // ==================== MASTER CATALOG OF ALL 29 TOOLS ====================
+        // Shared state to pass a generated PNG icon directly into the QR Code Generator
+        window._sharedCustomQrLogo = "";
 
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // ==================== MASTER CATALOG OF ALL 28 TOOLS ====================
-        // Includes all 24 tools from PDF24 screenshot + Custom Studio tools (Pro BG Remover, Styled QR, 8-Passport Photo Maker, OCR Suite)
         const TOOLS = [
             // --- Featured Custom HTML & AI Tools ---
+            {
+                id: 'icon-maker',
+                name: 'PNG Icon & Symbol Maker',
+                desc: 'Type any keyword (e.g. "tools", "wrench", "rocket") to search 200K+ symbols, style with badges/gradients & export PNG/SVG',
+                icon: 'fa-solid fa-icons',
+                color: 'text-amber-500 dark:text-amber-400',
+                badge: 'NEW • 200K+ Icons',
+                categories: ['featured', 'ocr-img']
+            },
             {
                 id: 'bg-remover',
                 name: 'Background Remover Pro',
@@ -542,7 +547,7 @@
         let activeCategory = 'all';
         let searchQuery = '';
         let showOnlyFavorites = false;
-        let favorites = JSON.parse(localStorage.getItem('omnistudio_favs') || '["bg-remover","qr-generator","passport-maker","pdf-ocr","pdf-to-images"]');
+        let favorites = JSON.parse(localStorage.getItem('omnistudio_favs') || '["icon-maker","bg-remover","qr-generator","passport-maker","pdf-ocr","pdf-to-images"]');
 
         // Update total count badge
         document.getElementById('total-tools-badge').textContent = TOOLS.length;
@@ -679,6 +684,7 @@
 
             // Dispatch to tool builder
             switch (toolId) {
+                case 'icon-maker': buildPngIconMaker(body); break;
                 case 'bg-remover': buildBgRemoverPro(body); break;
                 case 'qr-generator': buildStyledQRGenerator(body); break;
                 case 'passport-maker': buildPassportPhotoMaker(body); break;
@@ -1439,7 +1445,517 @@
                 if (qrCode) qrCode.download({ name: 'styled-qr', extension: 'png' });
             };
 
+            if (window._sharedCustomQrLogo) {
+                customLogoDataUrl = window._sharedCustomQrLogo;
+                shapeSelect.value = 'custom';
+                window._sharedCustomQrLogo = '';
+                showToast('Loaded your custom PNG icon into the QR center!', 'success');
+            }
+
             generateQR();
+        }
+
+        // ============================================================================
+        // NEW TOOL: PNG ICON & SYMBOL MAKER (Offline Lucide 1,400+ & Online Iconify 200K+)
+        // ============================================================================
+        function buildPngIconMaker(container) {
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Left Column: Keyword Search & Symbol Grid -->
+                    <div class="lg:col-span-5 space-y-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                                1. Search Symbol by Keyword (e.g. "tools", "wrench", "pdf", "rocket")
+                            </label>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="text" id="ic-search" value="tools" placeholder="Type tools, settings, camera, heart, shield..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                </div>
+                                <button id="ic-online-btn" class="px-3.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm whitespace-nowrap" title="Search 200,000+ Online Vector Icons">
+                                    <i class="fa-solid fa-earth-americas mr-1"></i> Deep Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Keyword Pills -->
+                        <div class="flex flex-wrap gap-1.5">
+                            ${['tools', 'wrench', 'settings', 'pdf', 'camera', 'heart', 'star', 'user', 'shield', 'rocket', 'code', 'cloud', 'folder', 'phone', 'lock'].map(kw => `
+                                <button onclick="window._quickIconSearch('${kw}')" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-[11px] font-semibold text-slate-600 dark:text-slate-300 transition-colors">
+                                    ${kw}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Results Count & Picker Grid -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-xs text-slate-500">
+                                <span id="ic-results-label" class="font-semibold">Matching Symbols (Click to customize)</span>
+                                <span id="ic-source-badge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">Built-in + Cloud</span>
+                            </div>
+                            <div id="ic-grid" class="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-[300px] overflow-y-auto p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Optional Custom Text / Emoji Symbol Mode -->
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Or Use Custom Emoji / Monogram Text + Sub-Label
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="ic-emoji-input" placeholder="Emoji/Text (e.g. 🛠️ or AI)" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs">
+                                <input type="text" id="ic-sublabel" placeholder="Bottom Label (e.g. TOOLS)" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle Column: Customization Controls -->
+                    <div class="lg:col-span-4 space-y-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">2. Export PNG Dimensions</label>
+                            <select id="ic-size" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold">
+                                <option value="32">32 × 32 px (Favicon Small)</option>
+                                <option value="64">64 × 64 px (Toolbar Icon)</option>
+                                <option value="128">128 × 128 px (Web Badge)</option>
+                                <option value="256">256 × 256 px (Standard App Icon)</option>
+                                <option value="512" selected>512 × 512 px (High-Res PNG Icon)</option>
+                                <option value="1024">1024 × 1024 px (Ultra-HD Master)</option>
+                            </select>
+                        </div>
+
+                        <!-- Background Badge Shape -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">3. Background Container Shape</label>
+                            <div class="grid grid-cols-5 gap-1.5">
+                                <button data-shape="none" class="ic-shape-btn py-2 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm" title="Transparent Cutout">None</button>
+                                <button data-shape="rounded" class="ic-shape-btn py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" title="App Squircle">Squircle</button>
+                                <button data-shape="circle" class="ic-shape-btn py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" title="Circle Badge">Circle</button>
+                                <button data-shape="hexagon" class="ic-shape-btn py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" title="Hexagon">Hex</button>
+                                <button data-shape="square" class="ic-shape-btn py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" title="Full Square">Square</button>
+                            </div>
+                        </div>
+
+                        <!-- Colors: Icon Color & Background Gradient -->
+                        <div class="grid grid-cols-3 gap-2 pt-1">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Symbol Color</label>
+                                <input type="color" id="ic-fg-color" value="#0284c7" class="w-full h-9 p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Badge Color 1</label>
+                                <input type="color" id="ic-bg1-color" value="#0f172a" class="w-full h-9 p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Badge Color 2</label>
+                                <input type="color" id="ic-bg2-color" value="#1e3a8a" class="w-full h-9 p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Quick Theme Presets -->
+                        <div class="flex items-center justify-between gap-1.5 pt-1">
+                            <span class="text-[11px] font-bold text-slate-400">Presets:</span>
+                            <button onclick="window._applyIconPreset('none','#0284c7','#ffffff','#ffffff')" class="px-2 py-1 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">Clean Blue</button>
+                            <button onclick="window._applyIconPreset('rounded','#ffffff','#2563eb','#7c3aed')" class="px-2 py-1 rounded text-[10px] font-bold bg-gradient-to-r from-blue-600 to-violet-600 text-white">Indigo App</button>
+                            <button onclick="window._applyIconPreset('circle','#ffffff','#f59e0b','#ea580c')" class="px-2 py-1 rounded text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white">Warm Badge</button>
+                            <button onclick="window._applyIconPreset('hexagon','#10b981','#0f172a','#1e293b')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-900 text-emerald-400">Cyber Hex</button>
+                        </div>
+
+                        <!-- Sliders: Scale & Stroke Width -->
+                        <div class="space-y-3 pt-1">
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span>Symbol Scale (Padding):</span>
+                                    <span id="ic-scale-val" class="text-sky-600 font-bold">65%</span>
+                                </div>
+                                <input type="range" id="ic-scale" min="30" max="92" value="65" class="w-full accent-sky-600">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span>Vector Stroke Thickness:</span>
+                                    <span id="ic-stroke-val" class="text-sky-600 font-bold">2.0 px</span>
+                                </div>
+                                <input type="range" id="ic-stroke" min="1" max="3.5" step="0.25" value="2" class="w-full accent-sky-600">
+                            </div>
+                        </div>
+
+                        <!-- Checkboxes: Drop Shadow & Border Ring -->
+                        <div class="flex items-center gap-4 pt-1">
+                            <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                                <input type="checkbox" id="ic-shadow" checked class="w-4 h-4 accent-sky-600 rounded">
+                                <span>3D Glow / Shadow</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                                <input type="checkbox" id="ic-border" class="w-4 h-4 accent-sky-600 rounded">
+                                <span>Badge Border Ring</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live High-Res Preview & Export Actions -->
+                    <div class="lg:col-span-3 flex flex-col space-y-4">
+                        <div class="checkerboard rounded-2xl p-6 border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center min-h-[260px] relative">
+                            <canvas id="ic-canvas" width="512" height="512" class="w-44 h-44 rounded-xl shadow-sm"></canvas>
+                            <span id="ic-active-name" class="mt-3 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">wrench / tools</span>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            <button id="ic-dl-png" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-download"></i> Download PNG Icon
+                            </button>
+                            <button id="ic-dl-svg" class="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-bezier-curve"></i> Download Vector SVG
+                            </button>
+                            <button id="ic-to-qr" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-qrcode"></i> Use as QR Code Center Logo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Synonym dictionary so common words like "tools", "pdf", "gear", "photo" immediately match crisp icons
+            const KEYWORD_SYNONYMS = {
+                tools: ['wrench', 'hammer', 'screwdriver', 'settings', 'sliders', 'HardHat', 'axe', 'drill', 'wand', 'pen-tool', 'scissors', 'ruler', 'paintbrush', 'cpu', 'cog', 'pocket-knife', 'briefcase'],
+                pdf: ['file-text', 'file', 'file-check', 'file-plus', 'file-spreadsheet', 'book-open', 'printer', 'bookmark', 'files', 'clipboard'],
+                settings: ['settings', 'SlidersHorizontal', 'cog', 'wrench', 'gauge', 'toggle-right', 'shield'],
+                camera: ['camera', 'image', 'aperture', 'video', 'film', 'scan-face', 'focus'],
+                heart: ['heart', 'heart-handshake', 'heart-pulse', 'smile', 'sparkles', 'award', 'crown'],
+                user: ['user', 'users', 'user-check', 'user-plus', 'id-card', 'contact', 'smile'],
+                shield: ['shield', 'shield-check', 'shield-alert', 'lock', 'key', 'award', 'check-circle'],
+                rocket: ['rocket', 'zap', 'flame', 'send', 'plane', 'globe', 'compass', 'sparkles'],
+                code: ['code', 'terminal', 'braces', 'cpu', 'database', 'git-branch', 'bug', 'globe']
+            };
+
+            const canvas = document.getElementById('ic-canvas');
+            const ctx = canvas.getContext('2d');
+            const gridEl = document.getElementById('ic-grid');
+            const searchInput = document.getElementById('ic-search');
+            const emojiInput = document.getElementById('ic-emoji-input');
+            const sublabelInput = document.getElementById('ic-sublabel');
+            const activeNameLabel = document.getElementById('ic-active-name');
+
+            let selectedSvgInner = `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>`;
+            let selectedIconName = 'wrench';
+            let badgeShape = 'none'; // 'none' | 'rounded' | 'circle' | 'hexagon' | 'square'
+
+            // Convert PascalCase Lucide icon name to kebab-case
+            function toKebab(str) {
+                return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+            }
+
+            // Build SVG string from Lucide icon definition node array
+            function lucideNodeToSvgInner(iconNode) {
+                if (!Array.isArray(iconNode)) return '';
+                return iconNode.map(([tag, attrs]) => {
+                    const attrStr = Object.entries(attrs || {})
+                        .filter(([k]) => k !== 'key')
+                        .map(([k, v]) => `${k}="${v}"`)
+                        .join(' ');
+                    return `<${tag} ${attrStr}/>`;
+                }).join('');
+            }
+
+            // Search local Lucide icons (1,400+ icons available 100% offline)
+            function searchLocalLucide(rawQuery) {
+                const q = (rawQuery || 'tools').trim().toLowerCase();
+                const results = [];
+                const seen = new Set();
+
+                if (typeof lucide !== 'undefined' && lucide.icons) {
+                    const allKeys = Object.keys(lucide.icons);
+                    const synList = KEYWORD_SYNONYMS[q] || [];
+
+                    // First add exact/synonym matches
+                    synList.forEach(syn => {
+                        const matchKey = allKeys.find(k => k.toLowerCase() === syn.toLowerCase() || toKebab(k) === syn.toLowerCase());
+                        if (matchKey && !seen.has(matchKey)) {
+                            seen.add(matchKey);
+                            results.push({ name: toKebab(matchKey), svgInner: lucideNodeToSvgInner(lucide.icons[matchKey]) });
+                        }
+                    });
+
+                    // Then substring matches across all 1,400+ Lucide icons
+                    for (const key of allKeys) {
+                        const kebab = toKebab(key);
+                        if ((kebab.includes(q) || key.toLowerCase().includes(q)) && !seen.has(key)) {
+                            seen.add(key);
+                            results.push({ name: kebab, svgInner: lucideNodeToSvgInner(lucide.icons[key]) });
+                            if (results.length >= 48) break;
+                        }
+                    }
+
+                    // If query had no matches, show popular tool symbols
+                    if (results.length === 0) {
+                        ['Wrench', 'Hammer', 'Settings', 'Sparkles', 'Heart', 'Star', 'Shield', 'Rocket', 'Camera', 'FileText', 'Folder', 'Lock'].forEach(k => {
+                            if (lucide.icons[k]) {
+                                results.push({ name: toKebab(k), svgInner: lucideNodeToSvgInner(lucide.icons[k]) });
+                            }
+                        });
+                    }
+                }
+                return results;
+            }
+
+            let currentSearchItems = [];
+
+            function renderIconGrid(items) {
+                currentSearchItems = items;
+                gridEl.innerHTML = items.map((item, idx) => `
+                    <button onclick="window._selectIconItem(${idx})" class="p-2.5 rounded-xl border ${item.name === selectedIconName ? 'border-sky-500 bg-sky-50 dark:bg-sky-950/60 text-sky-600' : 'border-slate-200 dark:border-slate-800 hover:border-sky-400 text-slate-700 dark:text-slate-200'} flex flex-col items-center justify-center gap-1 transition-all group" title="${item.name}">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            ${item.svgInner}
+                        </svg>
+                        <span class="text-[9px] text-slate-400 truncate w-full text-center">${item.name}</span>
+                    </button>
+                `).join('');
+            }
+
+            window._selectIconItem = (idx) => {
+                const item = currentSearchItems[idx];
+                if (!item) return;
+                selectedIconName = item.name;
+                selectedSvgInner = item.svgInner;
+                emojiInput.value = '';
+                activeNameLabel.textContent = `${item.name}.png`;
+                renderIconGrid(currentSearchItems);
+                renderIconCanvas();
+            };
+
+            window._quickIconSearch = (kw) => {
+                searchInput.value = kw;
+                const matches = searchLocalLucide(kw);
+                if (matches.length > 0) {
+                    selectedIconName = matches[0].name;
+                    selectedSvgInner = matches[0].svgInner;
+                    emojiInput.value = '';
+                    activeNameLabel.textContent = `${matches[0].name}.png`;
+                }
+                renderIconGrid(matches);
+                renderIconCanvas();
+            };
+
+            // Deep Online Search via Iconify Public API (200,000+ Open Source Icons)
+            async function runOnlineIconifySearch() {
+                const q = searchInput.value.trim() || 'tools';
+                const badge = document.getElementById('ic-source-badge');
+                badge.textContent = 'Searching 200K+ Icons...';
+                try {
+                    const res = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(q)}&limit=36`);
+                    const data = await res.json();
+                    if (data && Array.isArray(data.icons) && data.icons.length > 0) {
+                        const fetched = await Promise.all(data.icons.slice(0, 30).map(async (fullIconName) => {
+                            try {
+                                const [prefix, name] = fullIconName.split(':');
+                                const svgRes = await fetch(`https://api.iconify.design/${prefix}/${name}.svg`);
+                                const svgText = await svgRes.text();
+                                // Extract inner paths or keep full SVG
+                                const match = svgText.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+                                return {
+                                    name: name,
+                                    svgInner: match ? match[1].replace(/currentColor/g, document.getElementById('ic-fg-color').value) : ''
+                                };
+                            } catch { return null; }
+                        }));
+                        const valid = fetched.filter(Boolean);
+                        if (valid.length > 0) {
+                            badge.textContent = `Iconify Cloud (${valid.length})`;
+                            renderIconGrid(valid);
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Offline fallback to built-in Lucide icons:', err);
+                }
+                badge.textContent = 'Offline Lucide (1,400+)';
+                renderIconGrid(searchLocalLucide(q));
+            }
+
+            document.getElementById('ic-online-btn').onclick = runOnlineIconifySearch;
+            searchInput.addEventListener('input', (e) => {
+                const matches = searchLocalLucide(e.target.value);
+                renderIconGrid(matches);
+            });
+
+            // Shape selector buttons
+            function updateShapeButtons() {
+                document.querySelectorAll('.ic-shape-btn').forEach(btn => {
+                    if (btn.dataset.shape === badgeShape) {
+                        btn.className = 'ic-shape-btn py-2 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm';
+                    } else {
+                        btn.className = 'ic-shape-btn py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700';
+                    }
+                });
+            }
+
+            document.querySelectorAll('.ic-shape-btn').forEach(btn => {
+                btn.onclick = () => {
+                    badgeShape = btn.dataset.shape;
+                    updateShapeButtons();
+                    renderIconCanvas();
+                };
+            });
+
+            window._applyIconPreset = (shape, fg, bg1, bg2) => {
+                badgeShape = shape;
+                document.getElementById('ic-fg-color').value = fg;
+                document.getElementById('ic-bg1-color').value = bg1;
+                document.getElementById('ic-bg2-color').value = bg2;
+                updateShapeButtons();
+                renderIconCanvas();
+            };
+
+            // Core High-Resolution Canvas Renderer
+            function renderIconCanvas() {
+                const size = parseInt(document.getElementById('ic-size').value, 10) || 512;
+                const fgColor = document.getElementById('ic-fg-color').value;
+                const bg1 = document.getElementById('ic-bg1-color').value;
+                const bg2 = document.getElementById('ic-bg2-color').value;
+                const scalePct = parseInt(document.getElementById('ic-scale').value, 10) / 100;
+                const strokeWidth = parseFloat(document.getElementById('ic-stroke').value);
+                const useShadow = document.getElementById('ic-shadow').checked;
+                const useBorder = document.getElementById('ic-border').checked;
+                const customEmoji = emojiInput.value.trim();
+                const subLabel = sublabelInput.value.trim();
+
+                canvas.width = size;
+                canvas.height = size;
+                ctx.clearRect(0, 0, size, size);
+
+                // 1. Draw Background Badge Shape if enabled
+                if (badgeShape !== 'none') {
+                    ctx.save();
+                    const pad = size * 0.06;
+                    const boxSize = size - pad * 2;
+                    const grad = ctx.createLinearGradient(0, 0, size, size);
+                    grad.addColorStop(0, bg1);
+                    grad.addColorStop(1, bg2);
+                    ctx.fillStyle = grad;
+
+                    if (useShadow) {
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+                        ctx.shadowBlur = size * 0.045;
+                        ctx.shadowOffsetY = size * 0.02;
+                    }
+
+                    ctx.beginPath();
+                    if (badgeShape === 'circle') {
+                        ctx.arc(size / 2, size / 2, boxSize / 2, 0, Math.PI * 2);
+                    } else if (badgeShape === 'rounded') {
+                        ctx.roundRect(pad, pad, boxSize, boxSize, size * 0.22);
+                    } else if (badgeShape === 'square') {
+                        ctx.roundRect(pad, pad, boxSize, boxSize, size * 0.04);
+                    } else if (badgeShape === 'hexagon') {
+                        const cx = size / 2, cy = size / 2, r = boxSize / 2;
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (Math.PI / 3) * i - Math.PI / 6;
+                            const hx = cx + r * Math.cos(angle);
+                            const hy = cy + r * Math.sin(angle);
+                            if (i === 0) ctx.moveTo(hx, hy);
+                            else ctx.lineTo(hx, hy);
+                        }
+                        ctx.closePath();
+                    }
+                    ctx.fill();
+
+                    if (useBorder) {
+                        ctx.shadowBlur = 0;
+                        ctx.shadowOffsetY = 0;
+                        ctx.strokeStyle = fgColor;
+                        ctx.lineWidth = Math.max(2, size * 0.025);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // 2. Draw either Custom Emoji/Text OR Crisp SVG Vector Symbol
+                const iconBoxSize = Math.round(size * scalePct);
+                const offsetX = Math.round((size - iconBoxSize) / 2);
+                const offsetY = subLabel ? Math.round((size - iconBoxSize) / 2 - size * 0.05) : Math.round((size - iconBoxSize) / 2);
+
+                if (customEmoji) {
+                    ctx.save();
+                    if (useShadow && badgeShape === 'none') {
+                        ctx.shadowColor = 'rgba(0,0,0,0.22)';
+                        ctx.shadowBlur = size * 0.04;
+                    }
+                    ctx.fillStyle = fgColor;
+                    ctx.font = `bold ${Math.round(iconBoxSize * 0.75)}px Inter, system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(customEmoji, size / 2, offsetY + iconBoxSize / 2);
+                    ctx.restore();
+                    drawSubLabel();
+                } else {
+                    const svgMarkup = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconBoxSize}" height="${iconBoxSize}" viewBox="0 0 24 24" fill="none" stroke="${fgColor}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${selectedSvgInner}</svg>`;
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.save();
+                        if (useShadow && badgeShape === 'none') {
+                            ctx.shadowColor = 'rgba(0,0,0,0.22)';
+                            ctx.shadowBlur = size * 0.035;
+                            ctx.shadowOffsetY = size * 0.015;
+                        }
+                        ctx.drawImage(img, offsetX, offsetY, iconBoxSize, iconBoxSize);
+                        ctx.restore();
+                        drawSubLabel();
+                    };
+                    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgMarkup);
+                }
+
+                function drawSubLabel() {
+                    if (!subLabel) return;
+                    ctx.save();
+                    ctx.fillStyle = fgColor;
+                    ctx.font = `800 ${Math.round(size * 0.085)}px Inter, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(subLabel, size / 2, size * 0.84);
+                    ctx.restore();
+                }
+            }
+
+            // Bind live UI controls
+            ['ic-size', 'ic-fg-color', 'ic-bg1-color', 'ic-bg2-color', 'ic-shadow', 'ic-border'].forEach(id => {
+                document.getElementById(id).addEventListener('input', renderIconCanvas);
+                document.getElementById(id).addEventListener('change', renderIconCanvas);
+            });
+            document.getElementById('ic-scale').oninput = (e) => {
+                document.getElementById('ic-scale-val').textContent = e.target.value + '%';
+                renderIconCanvas();
+            };
+            document.getElementById('ic-stroke').oninput = (e) => {
+                document.getElementById('ic-stroke-val').textContent = e.target.value + ' px';
+                renderIconCanvas();
+            };
+            emojiInput.oninput = renderIconCanvas;
+            sublabelInput.oninput = renderIconCanvas;
+
+            // Download PNG
+            document.getElementById('ic-dl-png').onclick = () => {
+                const sz = document.getElementById('ic-size').value;
+                canvas.toBlob((blob) => {
+                    downloadBlob(blob, `icon-${selectedIconName}-${sz}x${sz}.png`);
+                    showToast(`Downloaded ${sz}×${sz} PNG Icon!`, 'success');
+                }, 'image/png');
+            };
+
+            // Download SVG
+            document.getElementById('ic-dl-svg').onclick = () => {
+                const fgColor = document.getElementById('ic-fg-color').value;
+                const strokeWidth = document.getElementById('ic-stroke').value;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" fill="none" stroke="${fgColor}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${selectedSvgInner}</svg>`;
+                downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `icon-${selectedIconName}.svg`);
+                showToast('Downloaded crisp vector SVG!', 'success');
+            };
+
+            // Send directly to Styled QR Code Generator
+            document.getElementById('ic-to-qr').onclick = () => {
+                window._sharedCustomQrLogo = canvas.toDataURL('image/png');
+                openTool('qr-generator');
+            };
+
+            // Initialize default "tools" search on load
+            window._quickIconSearch('tools');
         }
 
         // ============================================================================
@@ -2667,33 +3183,109 @@
         // TOOLS 21-23: PDF CONVERTER, CREATE PDF & WEBPAGE/HTML TO PDF
         // ============================================================================
         function buildPdfConverterCreator(container, toolId) {
+            const isWebpageToPdf = toolId === 'webpage-to-pdf';
+            const defaultContent = isWebpageToPdf 
+                ? `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; padding: 24px; }
+    .header-card { background: linear-gradient(135deg, #0284c7, #2563eb); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; }
+    h1 { margin: 0 0 8px 0; font-size: 24px; }
+    p { line-height: 1.6; font-size: 14px; }
+    .badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 999px; font-weight: bold; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; }
+    th { background: #f8fafc; font-weight: bold; }
+    tr:nth-child(even) { background: #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div class="header-card">
+    <h1>Project Invoice & Summary</h1>
+    <p>Rendered directly from HTML/CSS into a formatted multi-page PDF document.</p>
+  </div>
+  
+  <span class="badge">Status: Completed & Verified</span>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Description</th>
+        <th>Hours</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>UI/UX Design</td>
+        <td>Responsive single-file studio layout</td>
+        <td>14 hrs</td>
+        <td>$840.00</td>
+      </tr>
+      <tr>
+        <td>PDF Engine</td>
+        <td>Client-side compilation & OCR suite</td>
+        <td>20 hrs</td>
+        <td>$1,200.00</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td colspan="2"></td>
+        <td><strong>$2,040.00</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>`
+                : `Welcome to the All-in-One PDF Creator & Converter!
+
+• Type or paste any article, notes, Markdown, or invoice details here.
+• Or upload an existing PDF file above to extract its text into HTML, JSON, or TXT.
+• Click "Generate & Download PDF" below to create a clean A4 PDF document.`;
+
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-3">
-                        <label class="block text-xs font-bold uppercase text-slate-500">Write Content or Upload PDF / TXT to Convert</label>
-                        <input type="file" id="conv-file" accept=".pdf,.txt,.md,.html,.csv,.json" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white font-bold">
-                        <input type="text" id="conv-doc-title" value="Executive Summary & Document" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold">
-                        <textarea id="conv-editor" rows="12" class="w-full p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono text-sm">Welcome to the All-in-One PDF Creator & Converter!
-
-• Type or paste any article, webpage notes, Markdown, or invoice details here.
-• Or upload an existing PDF file above to extract its text into HTML, JSON, or TXT.
-• Click "Generate & Download PDF" below to create a clean A4 PDF document.</textarea>
-                    </div>
-                    <div class="space-y-4 flex flex-col justify-between bg-slate-50 dark:bg-slate-800/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <div class="space-y-2">
-                            <h3 class="font-bold text-base">Export & Conversion Options</h3>
-                            <p class="text-xs text-slate-500">Convert your text/HTML content into a formatted PDF, or export extracted PDF text into structured formats.</p>
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold uppercase text-slate-500">
+                                ${isWebpageToPdf ? 'HTML / CSS Code Input' : 'Write Content or Upload PDF / TXT / HTML to Convert'}
+                            </label>
+                            <span class="text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+                                <i class="fa-solid fa-code"></i> Live HTML Visual Rendering
+                            </span>
                         </div>
-                        <div class="space-y-2.5">
-                            <button id="conv-to-pdf" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow">
-                                <i class="fa-solid fa-file-pdf mr-1.5"></i> Generate & Download PDF
+                        <input type="file" id="conv-file" accept=".pdf,.txt,.md,.html,.htm,.csv,.json" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white font-bold bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-1.5">
+                        <input type="text" id="conv-doc-title" value="${isWebpageToPdf ? 'Rendered Webpage Document' : 'Executive Summary & Document'}" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold">
+                        <textarea id="conv-editor" rows="13" class="w-full p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">${defaultContent}</textarea>
+                    </div>
+
+                    <div class="space-y-4 flex flex-col justify-between bg-slate-50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-sm text-slate-800 dark:text-white">Live Visual Preview (What goes into PDF)</h3>
+                                <button id="conv-refresh-preview" class="px-2.5 py-1 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-sky-500 text-slate-600 dark:text-slate-300">
+                                    <i class="fa-solid fa-rotate mr-1"></i> Refresh Preview
+                                </button>
+                            </div>
+                            <div class="w-full h-56 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white shadow-inner">
+                                <iframe id="conv-live-frame" class="w-full h-full border-0"></iframe>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <button id="conv-to-pdf" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-pdf"></i> Render Visual HTML & Download PDF
                             </button>
-                            <button id="conv-to-txt" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
-                                <i class="fa-solid fa-file-lines mr-1.5"></i> Export as Plain Text (.TXT)
-                            </button>
-                            <button id="conv-to-html" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">
-                                <i class="fa-solid fa-code mr-1.5"></i> Export as Webpage (.HTML)
-                            </button>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="conv-to-txt" class="py-2 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-slate-700 dark:text-slate-200 font-bold text-xs">
+                                    <i class="fa-solid fa-file-lines mr-1 text-emerald-600"></i> Plain Text (.TXT)
+                                </button>
+                                <button id="conv-to-html" class="py-2 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-slate-700 dark:text-slate-200 font-bold text-xs">
+                                    <i class="fa-solid fa-code mr-1 text-indigo-600"></i> Save as Webpage (.HTML)
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2701,6 +3293,21 @@
 
             const editor = document.getElementById('conv-editor');
             const titleIn = document.getElementById('conv-doc-title');
+            const frame = document.getElementById('conv-live-frame');
+
+            function updatePreview() {
+                const val = editor.value;
+                const isHtml = /<[a-z][\s\S]*>/i.test(val);
+                const htmlToLoad = isHtml 
+                    ? val 
+                    : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Inter,sans-serif;padding:20px;line-height:1.6;color:#1e293b;}</style></head><body><h2 style="margin-top:0">${titleIn.value || 'Document'}</h2><pre style="white-space:pre-wrap;font-family:inherit;">${val.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></body></html>`;
+                
+                frame.srcdoc = htmlToLoad;
+            }
+
+            updatePreview();
+            editor.addEventListener('input', updatePreview);
+            document.getElementById('conv-refresh-preview').onclick = updatePreview;
 
             document.getElementById('conv-file').onchange = async (e) => {
                 const f = e.target.files[0];
@@ -2719,33 +3326,82 @@
                     showToast('Extracted text from PDF!', 'success');
                 } else {
                     editor.value = await f.text();
+                    showToast('Loaded file content into editor!', 'info');
+                }
+                updatePreview();
+            };
+
+            document.getElementById('conv-to-pdf').onclick = async () => {
+                const btn = document.getElementById('conv-to-pdf');
+                const rawVal = editor.value;
+                const isHtml = /<[a-z][\s\S]*>/i.test(rawVal);
+                const docTitle = titleIn.value.trim() || 'document';
+
+                btn.innerHTML = '<div class="spinner !w-4 !h-4 !border-white mr-1.5 inline-block"></div> Rendering Visual Layout to PDF...';
+                btn.disabled = true;
+
+                try {
+                    if (isHtml) {
+                        // Render full HTML/CSS visually via html2pdf & html2canvas
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.position = 'fixed';
+                        tempContainer.style.left = '-9999px';
+                        tempContainer.style.top = '0';
+                        tempContainer.style.width = '794px'; // Standard A4 width in 96 DPI CSS pixels
+                        tempContainer.style.background = '#ffffff';
+                        tempContainer.style.color = '#000000';
+                        tempContainer.innerHTML = rawVal;
+                        document.body.appendChild(tempContainer);
+
+                        const opt = {
+                            margin: [10, 10, 10, 10],
+                            filename: `${docTitle}.pdf`,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true, logging: false },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                        };
+
+                        await html2pdf().set(opt).from(tempContainer).save();
+                        document.body.removeChild(tempContainer);
+                        showToast('Rendered and downloaded visual HTML PDF!', 'success');
+                    } else {
+                        // Pure plain text fallback
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        doc.setFontSize(16);
+                        doc.text(docTitle, 15, 20);
+                        doc.setFontSize(11);
+                        const lines = doc.splitTextToSize(rawVal, 180);
+                        let y = 32;
+                        lines.forEach(l => {
+                            if (y > 280) { doc.addPage(); y = 20; }
+                            doc.text(l, 15, y);
+                            y += 6.5;
+                        });
+                        doc.save(`${docTitle}.pdf`);
+                        showToast('Created PDF document!', 'success');
+                    }
+                } catch (err) {
+                    console.error('HTML to PDF error:', err);
+                    showToast('PDF rendering error: ' + err.message, 'error');
+                } finally {
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Render Visual HTML & Download PDF';
+                    btn.disabled = false;
                 }
             };
 
-            document.getElementById('conv-to-pdf').onclick = () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFontSize(16);
-                doc.text(titleIn.value || 'Document', 15, 20);
-                doc.setFontSize(11);
-                const lines = doc.splitTextToSize(editor.value, 180);
-                let y = 32;
-                lines.forEach(l => {
-                    if (y > 280) { doc.addPage(); y = 20; }
-                    doc.text(l, 15, y);
-                    y += 6.5;
-                });
-                doc.save(`${titleIn.value || 'document'}.pdf`);
-                showToast('Created PDF document!', 'success');
-            };
-
             document.getElementById('conv-to-txt').onclick = () => {
-                downloadBlob(new Blob([editor.value], { type: 'text/plain' }), `${titleIn.value || 'document'}.txt`);
+                downloadBlob(new Blob([editor.value], { type: 'text/plain;charset=utf-8' }), `${titleIn.value || 'document'}.txt`);
             };
 
             document.getElementById('conv-to-html').onclick = () => {
-                const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${titleIn.value}</title><style>body{font-family:sans-serif;max-width:750px;margin:40px auto;line-height:1.6;padding:0 20px;}</style></head><body><h1>${titleIn.value}</h1><pre style="white-space:pre-wrap">${editor.value}</pre></body></html>`;
-                downloadBlob(new Blob([html], { type: 'text/html' }), `${titleIn.value || 'document'}.html`);
+                const val = editor.value;
+                const isHtml = /<[a-z][\s\S]*>/i.test(val);
+                const outHtml = isHtml 
+                    ? val 
+                    : `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${titleIn.value}</title><style>body{font-family:sans-serif;max-width:750px;margin:40px auto;line-height:1.6;padding:0 20px;}</style></head><body><h1>${titleIn.value}</h1><pre style="white-space:pre-wrap">${val}</pre></body></html>`;
+                downloadBlob(new Blob([outHtml], { type: 'text/html;charset=utf-8' }), `${titleIn.value || 'document'}.html`);
             };
         }
 
